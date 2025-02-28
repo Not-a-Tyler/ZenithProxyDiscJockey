@@ -17,9 +17,7 @@ java { toolchain { languageVersion = javaVersion } }
 
 repositories {
     mavenLocal()
-    maven("https://maven.2b2t.vc/releases") {
-        content { includeGroupByRegex("com.github.rfresh2.*") }
-    }
+    maven("https://maven.2b2t.vc/releases")
     maven("https://libraries.minecraft.net") {
         content { includeGroup("com.mojang") }
     }
