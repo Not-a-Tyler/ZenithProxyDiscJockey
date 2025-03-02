@@ -15,4 +15,6 @@ public class ExampleConfig {
         public boolean enabled = true;
         public int delayTicks = 250;
     }
+
+    public boolean esp = false;
 }

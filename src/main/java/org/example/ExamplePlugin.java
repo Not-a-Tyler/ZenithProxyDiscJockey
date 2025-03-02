@@ -4,6 +4,8 @@ import com.zenith.api.Plugin;
 import com.zenith.api.PluginAPI;
 import com.zenith.api.ZenithProxyPlugin;
 import org.example.command.ExampleCommand;
+import org.example.command.ExampleESPCommand;
+import org.example.module.ExampleESPModule;
 import org.example.module.ExampleModule;
 import org.slf4j.Logger;
 
@@ -29,7 +31,9 @@ public class ExamplePlugin implements ZenithProxyPlugin {
         // initialize any configurations before modules or commands might need to read them
         PLUGIN_CONFIG = pluginAPI.registerConfig("example-plugin", ExampleConfig.class);
         pluginAPI.registerModule(new ExampleModule());
+        pluginAPI.registerModule(new ExampleESPModule());
         pluginAPI.registerCommand(new ExampleCommand());
+        pluginAPI.registerCommand(new ExampleESPCommand());
         LOG.info("Example Plugin loaded!");
     }
 }

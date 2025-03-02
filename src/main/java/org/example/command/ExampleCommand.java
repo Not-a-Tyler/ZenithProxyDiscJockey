@@ -6,9 +6,11 @@ import com.zenith.command.CommandUsage;
 import com.zenith.command.brigadier.CommandCategory;
 import com.zenith.command.brigadier.CommandContext;
 import com.zenith.discord.Embed;
+import org.example.module.ExampleModule;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
+import static com.zenith.Shared.MODULE;
 import static com.zenith.command.brigadier.ToggleArgumentType.getToggle;
 import static com.zenith.command.brigadier.ToggleArgumentType.toggle;
 import static org.example.ExamplePlugin.PLUGIN_CONFIG;
@@ -34,6 +36,8 @@ public class ExampleCommand extends Command {
         return command("examplePlugin")
             .then(argument("toggle", toggle()).executes(c -> {
                 PLUGIN_CONFIG.moduleConfig.enabled = getToggle(c, "toggle");
+                // make sure to sync so the module is actually toggled
+                MODULE.get(ExampleModule.class).syncEnabledFromConfig();
                 c.getSource().getEmbed()
                     .title("Example Plugin " + toggleStrCaps(PLUGIN_CONFIG.moduleConfig.enabled));
                 return OK;
