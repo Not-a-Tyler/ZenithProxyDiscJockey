@@ -9,14 +9,13 @@ import org.example.module.ExampleESPModule;
 import org.example.module.ExampleModule;
 import org.slf4j.Logger;
 
-// to indicate any MC version: @Plugin(mcVersions = "*")
 @Plugin(
     id = "example-plugin",
     version = "${version}",
     description = "ZenithProxy Example Plugin",
     url = "https://github.com/rfresh2/ZenithProxyExamplePlugin",
     authors = {"rfresh2"},
-    mcVersions = {"1.21.0", "1.21.4"}
+    mcVersions = {"1.21.0"} // to indicate any MC version: @Plugin(mcVersions = "*")
 )
 public class ExamplePlugin implements ZenithProxyPlugin {
     // public static for easy access from modules and commands
@@ -26,7 +25,7 @@ public class ExamplePlugin implements ZenithProxyPlugin {
 
     @Override
     public void onLoad(PluginAPI pluginAPI) {
-        LOG = pluginAPI.getLogger(this);
+        LOG = pluginAPI.getLogger();
         LOG.info("Example Plugin loading...");
         // initialize any configurations before modules or commands might need to read them
         PLUGIN_CONFIG = pluginAPI.registerConfig("example-plugin", ExampleConfig.class);

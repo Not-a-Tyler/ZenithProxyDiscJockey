@@ -3,7 +3,7 @@ import java.time.ZoneOffset
 
 plugins {
     java
-    id("net.raphimc.class-token-replacer") version("1.1.3")
+    id("net.raphimc.class-token-replacer") version("1.1.4")
     idea
 }
 
