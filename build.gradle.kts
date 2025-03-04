@@ -70,6 +70,9 @@ tasks {
         group = "build"
         description = "Execute ZenithProxy With Plugin"
         classpath = sourceSets.main.get().runtimeClasspath
+            // filter out duplicate classpath entries
+            // we want zenith to load our plugin classes from the run directory like it would in prod
+            .filter { !it.path.contains(layout.buildDirectory.asFile.get().path) }
         workingDir = runDirectory.asFile
         mainClass.set("com.zenith.Proxy")
         jvmArgs = listOf("-Xmx300m", "-XX:+UseG1GC")
