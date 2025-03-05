@@ -1,10 +1,11 @@
+import org.jetbrains.gradle.ext.settings
+import org.jetbrains.gradle.ext.taskTriggers
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 plugins {
     java
-    id("net.raphimc.class-token-replacer") version("1.1.4")
-    idea
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.10"
 }
 
 group = properties["maven_group"] as String
@@ -81,6 +82,24 @@ tasks {
         dependsOn(copyPluginTask)
     }
 
+    val templateTask = register("generateTemplates", Copy::class.java) {
+        group = "build"
+        description = "Generates class templates"
+        val props = mapOf(
+            "version" to project.version
+        )
+        inputs.properties(props)
+        from(file("src/main/templates"))
+        into(layout.buildDirectory.dir("generated/sources/templates"))
+        expand(props)
+    }
+    sourceSets.main.get().java.srcDir(templateTask.map { it.outputs })
+    project.idea.project.settings.taskTriggers.afterSync(templateTask)
+
+    compileJava {
+        dependsOn(templateTask)
+    }
+
     jar {
         manifest { // metadata about the plugin build
             attributes(mapOf(
@@ -88,14 +107,6 @@ tasks {
                 "Java-Version" to javaReleaseVersion,
                 "MC-Version" to mc
             ))
-        }
-    }
-}
-
-sourceSets {
-    main {
-        classTokenReplacer {
-            property("\${version}", project.version)
         }
     }
 }

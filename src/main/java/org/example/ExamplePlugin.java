@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 
 @Plugin(
     id = "example-plugin",
-    version = "${version}",
+    version = BuildConstants.VERSION,
     description = "ZenithProxy Example Plugin",
     url = "https://github.com/rfresh2/ZenithProxyExamplePlugin",
     authors = {"rfresh2"},
