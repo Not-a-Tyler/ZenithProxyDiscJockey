@@ -10,11 +10,11 @@ package org.example;
  * Fields to static inner classes generate nested JSON objects.
  */
 public class ExampleConfig {
-    public final ExampleModuleConfig moduleConfig = new ExampleModuleConfig();
+    public boolean esp = false;
+
+    public final ExampleModuleConfig exampleModule = new ExampleModuleConfig();
     public static class ExampleModuleConfig {
         public boolean enabled = true;
         public int delayTicks = 250;
     }
-
-    public boolean esp = false;
 }

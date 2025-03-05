@@ -26,6 +26,8 @@ public class ExampleESPModule extends Module {
             .setId("esp")
             .setPriority(1000)
             .state(ProtocolState.GAME, PacketHandlerStateCodec.<ServerSession>builder()
+                // packet classes can and will change between MC versions
+                // if you want to have packet handlers you probably need separate plugin builds for each MC version
                 .registerInbound(ClientboundSetEntityDataPacket.class, new GlowingEntityMetadataPacketHandler())
                 // or with in-line lambda:
 //                .registerOutbound(ClientboundSetEntityDataPacket.class, (ClientboundSetEntityDataPacket packet, ServerSession session) -> {
@@ -33,6 +35,8 @@ public class ExampleESPModule extends Module {
 //                    ...more impl...
 //                    return p;
 //                })
+                // beware there are different PacketHandler interfaces that would be trickier to declare as a lambda
+                // i.e. to handle client packets on the tick loop you need to implement ClientEventLoopPacketHandler
                 .build())
             .build();
     }

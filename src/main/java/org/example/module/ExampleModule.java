@@ -16,7 +16,7 @@ public class ExampleModule extends Module {
 
     @Override
     public boolean enabledSetting() {
-        return ExamplePlugin.PLUGIN_CONFIG.moduleConfig.enabled;
+        return ExamplePlugin.PLUGIN_CONFIG.exampleModule.enabled;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ExampleModule extends Module {
     }
 
     private void handleBotTick(ClientBotTick event) {
-        if (timer.tick(ExamplePlugin.PLUGIN_CONFIG.moduleConfig.delayTicks)) {
+        if (timer.tick(ExamplePlugin.PLUGIN_CONFIG.exampleModule.delayTicks)) {
             info("Hello from ExampleModule!");
         }
     }
