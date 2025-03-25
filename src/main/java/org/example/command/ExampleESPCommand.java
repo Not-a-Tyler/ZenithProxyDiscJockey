@@ -10,7 +10,7 @@ import com.zenith.command.brigadier.CommandContext;
 import org.example.ExamplePlugin;
 import org.example.module.ExampleESPModule;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.MetadataType;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.MetadataTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ByteEntityMetadata;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEntityDataPacket;
 
@@ -44,7 +44,7 @@ public class ExampleESPCommand extends Command {
                         EntityMetadata<?, ?> toSend;
                         toSend = e.getMetadata().get(0);
                         if (toSend == null)
-                            toSend = new ByteEntityMetadata(0, MetadataType.BYTE, (byte) 0);
+                            toSend = new ByteEntityMetadata(0, MetadataTypes.BYTE, (byte) 0);
                         player.sendAsync(new ClientboundSetEntityDataPacket(e.getEntityId(), Lists.newArrayList(toSend)));
                     });
                 }
