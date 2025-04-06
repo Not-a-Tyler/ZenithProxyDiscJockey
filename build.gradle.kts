@@ -4,17 +4,26 @@ plugins {
 
 group = properties["maven_group"] as String
 version = properties["plugin_version"] as String
+val mc = properties["mc"] as String
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-zenithProxy {
-    mc = properties["mc"] as String
+zenithProxyPlugin {
     templateProperties = mapOf(
         "version" to project.version
     )
 }
 
 repositories {
-    mavenLocal()
-    maven("https://maven.2b2t.vc/releases")
+    mavenLocal() // if developing against a locally published zenith build
+    maven("https://maven.2b2t.vc/remote") {
+        description = "Dependencies used by ZenithProxy"
+    }
+    maven("https://maven.2b2t.vc/releases") {
+        description = "ZenithProxy Releases"
+    }
+}
+
+dependencies {
+    zenithProxy("com.zenith:ZenithProxy:$mc-SNAPSHOT")
 }

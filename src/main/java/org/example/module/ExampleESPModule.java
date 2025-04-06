@@ -30,10 +30,9 @@ public class ExampleESPModule extends Module {
                 // if you want to have packet handlers you probably need separate plugin builds for each MC version
                 .registerInbound(ClientboundSetEntityDataPacket.class, new GlowingEntityMetadataPacketHandler())
                 // or with in-line lambda:
-//                .registerOutbound(ClientboundSetEntityDataPacket.class, (packet, ServerSession session) -> {
-//                    ClientboundSetEntityDataPacket p = packet;
+//                .registerOutbound(ClientboundSetEntityDataPacket.class, (packet, session) -> {
 //                    ...more impl...
-//                    return p;
+//                    return packet;
 //                })
                 // beware there are different PacketHandler interfaces that would be trickier to declare as a lambda
                 // i.e. to handle client packets on the tick loop you need to implement ClientEventLoopPacketHandler
