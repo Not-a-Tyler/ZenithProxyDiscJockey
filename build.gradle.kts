@@ -5,7 +5,7 @@ plugins {
 group = properties["maven_group"] as String
 version = properties["plugin_version"] as String
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(23) } }
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 zenithProxy {
     mc = properties["mc"] as String
