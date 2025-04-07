@@ -1,10 +1,10 @@
 package org.example.module;
 
-import com.zenith.module.Module;
-import com.zenith.network.registry.PacketHandler;
-import com.zenith.network.registry.PacketHandlerCodec;
-import com.zenith.network.registry.PacketHandlerStateCodec;
-import com.zenith.network.server.ServerSession;
+import com.zenith.api.module.Module;
+import com.zenith.api.network.PacketHandler;
+import com.zenith.api.network.PacketHandlerCodec;
+import com.zenith.api.network.PacketHandlerStateCodec;
+import com.zenith.api.network.server.ServerSession;
 import org.example.ExamplePlugin;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;

@@ -1,8 +1,8 @@
 package org.example;
 
-import com.zenith.api.Plugin;
-import com.zenith.api.PluginAPI;
-import com.zenith.api.ZenithProxyPlugin;
+import com.zenith.api.plugin.Plugin;
+import com.zenith.api.plugin.PluginAPI;
+import com.zenith.api.plugin.ZenithProxyPlugin;
 import org.example.command.ExampleCommand;
 import org.example.command.ExampleESPCommand;
 import org.example.module.ExampleESPModule;

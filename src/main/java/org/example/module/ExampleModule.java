@@ -1,8 +1,8 @@
 package org.example.module;
 
 import com.github.rfresh2.EventConsumer;
-import com.zenith.event.module.ClientBotTick;
-import com.zenith.module.Module;
+import com.zenith.api.event.client.ClientBotTick;
+import com.zenith.api.module.Module;
 import com.zenith.util.Timer;
 import com.zenith.util.Timers;
 import org.example.ExamplePlugin;
