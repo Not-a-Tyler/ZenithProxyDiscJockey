@@ -10,7 +10,7 @@ import org.example.module.ExampleModule;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.zenith.Shared.MODULE;
+import static com.zenith.Globals.MODULE;
 import static com.zenith.command.brigadier.ToggleArgumentType.getToggle;
 import static com.zenith.command.brigadier.ToggleArgumentType.toggle;
 import static org.example.ExamplePlugin.PLUGIN_CONFIG;
@@ -51,7 +51,7 @@ public class ExampleCommand extends Command {
     }
 
     @Override
-    public void postPopulate(Embed embed) {
+    public void defaultEmbed(Embed embed) {
         embed
             .primaryColor()
             .addField("Enabled", toggleStr(PLUGIN_CONFIG.exampleModule.enabled), false)
