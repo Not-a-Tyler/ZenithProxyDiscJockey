@@ -28,9 +28,9 @@ public class ExampleESPModule extends Module {
             .state(ProtocolState.GAME, PacketHandlerStateCodec.serverBuilder()
                 // packet classes can and will change between MC versions
                 // if you want to have packet handlers you probably need separate plugin builds for each MC version
-                .registerInbound(ClientboundSetEntityDataPacket.class, new GlowingEntityMetadataPacketHandler())
+                .inbound(ClientboundSetEntityDataPacket.class, new GlowingEntityMetadataPacketHandler())
                 // or with in-line lambda:
-//                .registerOutbound(ClientboundSetEntityDataPacket.class, (packet, session) -> {
+//                .outbound(ClientboundSetEntityDataPacket.class, (packet, session) -> {
 //                    ...more impl...
 //                    return packet;
 //                })
