@@ -39,14 +39,14 @@ public class ExampleCommand extends Command {
                 // make sure to sync so the module is actually toggled
                 MODULE.get(ExampleModule.class).syncEnabledFromConfig();
                 c.getSource().getEmbed()
+                    // if no title is set, no embed response will be sent
+                    // other properties like fields can be left unset without issues
                     .title("Example Plugin " + toggleStrCaps(PLUGIN_CONFIG.exampleModule.enabled));
-                return OK;
             }))
             .then(literal("delay").then(argument("ticks", integer(0)).executes(c -> {
                 PLUGIN_CONFIG.exampleModule.delayTicks = getInteger(c, "ticks");
                 c.getSource().getEmbed()
                     .title("Delay Set");
-                return OK;
             })));
     }
 
@@ -54,7 +54,7 @@ public class ExampleCommand extends Command {
     public void defaultEmbed(Embed embed) {
         embed
             .primaryColor()
-            .addField("Enabled", toggleStr(PLUGIN_CONFIG.exampleModule.enabled), false)
-            .addField("Delay", PLUGIN_CONFIG.exampleModule.delayTicks + " ticks", false);
+            .addField("Enabled", toggleStr(PLUGIN_CONFIG.exampleModule.enabled))
+            .addField("Delay", PLUGIN_CONFIG.exampleModule.delayTicks + " ticks");
     }
 }

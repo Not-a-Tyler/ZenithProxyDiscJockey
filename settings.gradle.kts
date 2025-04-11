@@ -4,3 +4,5 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+rootProject.name = ext.properties["plugin_name"] as String

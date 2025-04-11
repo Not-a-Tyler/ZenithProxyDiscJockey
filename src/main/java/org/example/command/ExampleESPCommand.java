@@ -26,7 +26,9 @@ public class ExampleESPCommand extends Command {
             .name("esp")
             .category(CommandCategory.MODULE)
             .description("Renders the spectral effect around all entities")
-            .usageLines("on/off")
+            .usageLines(
+                "on/off"
+            )
             .build();
     }
 
@@ -37,21 +39,25 @@ public class ExampleESPCommand extends Command {
                 ExamplePlugin.PLUGIN_CONFIG.esp = getToggle(c, "toggle");
                 // make sure to sync so the module is actually toggled
                 MODULE.get(ExampleESPModule.class).syncEnabledFromConfig();
-                var player = Proxy.getInstance().getActivePlayer();
-                if (player != null) {
-                    // resend all entity metadata from cache
+                // array of sessions with the controlling player and any spectators
+                var sessions = Proxy.getInstance().getActiveConnections().getArray();
+                if (sessions.length > 0) {
+                    // resend entity metadata for every cached entity
+                    // if the module is now enabled, our outbound packet handler will modify the packets and add the metadata value
+                    // otherwise, this is resyncing the original metadata to players (i.e. removing the effect)
                     CACHE.getEntityCache().getEntities().values().forEach(e -> {
                         EntityMetadata<?, ?> toSend;
                         toSend = e.getMetadata().get(0);
                         if (toSend == null)
                             toSend = new ByteEntityMetadata(0, MetadataTypes.BYTE, (byte) 0);
-                        player.sendAsync(new ClientboundSetEntityDataPacket(e.getEntityId(), Lists.newArrayList(toSend)));
+                        for (int i = 0; i < sessions.length; i++) {
+                            sessions[i].sendAsync(new ClientboundSetEntityDataPacket(e.getEntityId(), Lists.newArrayList(toSend)));
+                        }
                     });
                 }
                 c.getSource().getEmbed()
                     .title("ESP " + toggleStrCaps(ExamplePlugin.PLUGIN_CONFIG.esp))
                     .primaryColor();
-                return 1;
             }));
     }
 }

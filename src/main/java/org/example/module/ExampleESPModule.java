@@ -45,29 +45,23 @@ public class ExampleESPModule extends Module {
     public static class GlowingEntityMetadataPacketHandler implements PacketHandler<ClientboundSetEntityDataPacket, ServerSession> {
         @Override
         public ClientboundSetEntityDataPacket apply(final ClientboundSetEntityDataPacket packet, final ServerSession session) {
-            ClientboundSetEntityDataPacket p = packet;
             var metadata = packet.getMetadata();
-            boolean edited = false;
             for (int i = 0; i < metadata.size(); i++) {
                 final EntityMetadata<?, ?> entityMetadata = metadata.get(i);
                 // https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Entity_metadata#Entity
-                if (entityMetadata.getId() == 0 && entityMetadata.getType() == MetadataTypes.BYTE) {
-                    ByteEntityMetadata byteMetadata = (ByteEntityMetadata) entityMetadata;
+                if (entityMetadata.getId() == 0 && entityMetadata instanceof ByteEntityMetadata byteMetadata) {
+                    // found the metadata id we want to edit
                     var newMetadata = new ByteEntityMetadata(0, MetadataTypes.BYTE, (byte) (byteMetadata.getPrimitiveValue() | 0x40));
+                    // copy to avoid mutating potentially cached data
                     var newMetadataList = new ArrayList<>(metadata);
                     newMetadataList.set(i, newMetadata);
-                    p = packet.withMetadata(newMetadataList);
-                    edited = true;
-                    break;
+                    return packet.withMetadata(newMetadataList);
                 }
             }
-            if (!edited) {
-                var newMetadata = new ArrayList<EntityMetadata<?, ?>>(metadata.size() + 1);
-                newMetadata.addAll(packet.getMetadata());
-                newMetadata.add(new ByteEntityMetadata(0, MetadataTypes.BYTE, (byte) 0x40));
-                p = packet.withMetadata(newMetadata);
-            }
-            return p;
+            // metadata id wasn't present, so we need to add it
+            var newMetadata = new ArrayList<>(packet.getMetadata());
+            newMetadata.addFirst(new ByteEntityMetadata(0, MetadataTypes.BYTE, (byte) 0x40));
+            return packet.withMetadata(newMetadata);
         }
     }
 }

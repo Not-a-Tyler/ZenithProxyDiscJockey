@@ -16,9 +16,10 @@ import org.slf4j.Logger;
     url = "https://github.com/rfresh2/ZenithProxyExamplePlugin",
     authors = {"rfresh2"},
     mcVersions = {"1.21.0"} // to indicate any MC version: @Plugin(mcVersions = "*")
+                            // if you touch packet classes, you almost certainly need to pin to a single mc version
 )
 public class ExamplePlugin implements ZenithProxyPlugin {
-    // public static for easy access from modules and commands
+    // public static for simple access from modules and commands
     // or alternatively, you could pass these around in constructors
     public static ExampleConfig PLUGIN_CONFIG;
     public static Logger LOG;
