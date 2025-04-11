@@ -3,11 +3,11 @@ package org.example;
 import com.zenith.api.plugin.Plugin;
 import com.zenith.api.plugin.PluginAPI;
 import com.zenith.api.plugin.ZenithProxyPlugin;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.example.command.ExampleCommand;
 import org.example.command.ExampleESPCommand;
 import org.example.module.ExampleESPModule;
 import org.example.module.ExampleModule;
-import org.slf4j.Logger;
 
 @Plugin(
     id = "example-plugin",
@@ -22,7 +22,7 @@ public class ExamplePlugin implements ZenithProxyPlugin {
     // public static for simple access from modules and commands
     // or alternatively, you could pass these around in constructors
     public static ExampleConfig PLUGIN_CONFIG;
-    public static Logger LOG;
+    public static ComponentLogger LOG;
 
     @Override
     public void onLoad(PluginAPI pluginAPI) {
