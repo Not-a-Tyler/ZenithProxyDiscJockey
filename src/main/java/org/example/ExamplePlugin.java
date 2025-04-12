@@ -1,8 +1,8 @@
 package org.example;
 
-import com.zenith.api.plugin.Plugin;
-import com.zenith.api.plugin.PluginAPI;
-import com.zenith.api.plugin.ZenithProxyPlugin;
+import com.zenith.plugin.api.Plugin;
+import com.zenith.plugin.api.PluginAPI;
+import com.zenith.plugin.api.ZenithProxyPlugin;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.example.command.ExampleCommand;
 import org.example.command.ExampleESPCommand;
