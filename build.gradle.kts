@@ -15,7 +15,6 @@ zenithProxyPlugin {
 }
 
 repositories {
-    mavenLocal() // if developing against a locally published zenith build
     maven("https://maven.2b2t.vc/releases") {
         description = "ZenithProxy Releases and Dependencies"
     }
