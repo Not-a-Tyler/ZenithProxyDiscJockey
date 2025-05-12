@@ -26,20 +26,28 @@ repositories {
 dependencies {
     zenithProxy("com.zenith:ZenithProxy:$mc-SNAPSHOT")
 
-    // you can include dependencies by shading
+    /** to include dependencies into your plugin jar **/
 //    shade("com.github.ben-manes.caffeine:caffeine:3.2.0")
 }
 
 tasks {
     shadowJar {
-        // relocate shaded dependencies to avoid conflicts with other plugins
-        // transitive dependencies should also be relocated
-        // build and examine your plugin jar contents to check
+        /**
+         * relocate shaded dependencies to avoid conflicts with other plugins
+         * transitive dependencies should also be relocated or removed (with exclude)
+         * build and examine your plugin jar contents to check
+         * https://gradleup.com/shadow/configuration/relocation/
+         */
+//        val basePackage = "${project.group}.shadow"
+//        relocate("com.github.benmanes.caffeine", "$basePackage.caffeine")
 
-//        relocate("com.github.benmanes.caffeine", "${project.group}.shadow.caffeine")
-
-        // remove unneeded dependencies by jar folder path
-//        exclude("com/google/errorprone/**")
-//        exclude("org/jspecify/**")
+        /**
+         * remove unneeded transitive dependencies
+         * https://gradleup.com/shadow/configuration/dependencies/#filtering-dependencies
+         */
+//        dependencies {
+//            exclude(dependency(":error_prone_annotations:.*"))
+//            exclude(dependency(":jspecify:.*"))
+//        }
     }
 }
