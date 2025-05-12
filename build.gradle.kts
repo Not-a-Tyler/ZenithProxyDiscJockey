@@ -25,4 +25,21 @@ repositories {
 
 dependencies {
     zenithProxy("com.zenith:ZenithProxy:$mc-SNAPSHOT")
+
+    // you can include dependencies by shading
+//    shade("com.github.ben-manes.caffeine:caffeine:3.2.0")
+}
+
+tasks {
+    shadowJar {
+        // relocate shaded dependencies to avoid conflicts with other plugins
+        // transitive dependencies should also be relocated
+        // build and examine your plugin jar contents to check
+
+//        relocate("com.github.benmanes.caffeine", "${project.group}.shadow.caffeine")
+
+        // remove unneeded dependencies by jar folder path
+//        exclude("com/google/errorprone/**")
+//        exclude("org/jspecify/**")
+    }
 }
