@@ -37,6 +37,10 @@ I recommend looking at existing modules and commands for examples.
 * [Module](https://github.com/rfresh2/ZenithProxy/tree/1.21.0/src/main/java/com/zenith/module)
 * [Command](https://github.com/rfresh2/ZenithProxy/tree/1.21.0/src/main/java/com/zenith/command)
 
+### JavaDocs
+
+https://maven.2b2t.vc/javadoc/releases/com/zenith/ZenithProxy/1.21.0-SNAPSHOT
+
 ### Building Plugins
 
 Execute the Gradle `build` task: `./gradlew build` - or double-click the task in Intellij
