@@ -6,8 +6,10 @@ import com.zenith.plugin.api.ZenithProxyPlugin;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.example.command.ExampleCommand;
 import org.example.command.ExampleESPCommand;
+import org.example.command.ExampleWanderCommand;
 import org.example.module.ExampleESPModule;
 import org.example.module.ExampleModule;
+import org.example.module.ExampleWanderModule;
 
 @Plugin(
     id = "example-plugin",
@@ -32,8 +34,10 @@ public class ExamplePlugin implements ZenithProxyPlugin {
         PLUGIN_CONFIG = pluginAPI.registerConfig("example-plugin", ExampleConfig.class);
         pluginAPI.registerModule(new ExampleModule());
         pluginAPI.registerModule(new ExampleESPModule());
+        pluginAPI.registerModule(new ExampleWanderModule());
         pluginAPI.registerCommand(new ExampleCommand());
         pluginAPI.registerCommand(new ExampleESPCommand());
+        pluginAPI.registerCommand(new ExampleWanderCommand());
         LOG.info("Example Plugin loaded!");
     }
 }

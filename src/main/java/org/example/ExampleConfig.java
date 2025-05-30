@@ -17,4 +17,11 @@ public class ExampleConfig {
         public boolean enabled = true;
         public int delayTicks = 250;
     }
+
+    public final ExampleWanderConfig wander = new ExampleWanderConfig();
+    public static final class ExampleWanderConfig {
+        public boolean enabled = false;
+        public int radius = 2000;
+        public int minRadius = 100;
+    }
 }
