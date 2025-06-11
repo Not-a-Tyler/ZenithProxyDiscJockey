@@ -22,7 +22,7 @@ Each plugin needs a main class that implements `ZenithProxyPlugin` and is annota
 
 Plugin metadata like its unique id, version, and supported MC versions is defined in the `@Plugin` annotation.
 
-[See example](https://github.com/rfresh2/ZenithProxyExamplePlugin/blob/1.21.0/src/main/java/org/example/ExamplePlugin.java)
+[See example](https://github.com/rfresh2/ZenithProxyExamplePlugin/blob/1.21.4/src/main/java/org/example/ExamplePlugin.java)
 
 ### Plugin API
 
@@ -34,12 +34,12 @@ This method provides a `PluginAPI` object that you can use to register modules, 
 
 I recommend looking at existing modules and commands for examples.
 
-* [Module](https://github.com/rfresh2/ZenithProxy/tree/1.21.0/src/main/java/com/zenith/module)
-* [Command](https://github.com/rfresh2/ZenithProxy/tree/1.21.0/src/main/java/com/zenith/command)
+* [Module](https://github.com/rfresh2/ZenithProxy/tree/1.21.4/src/main/java/com/zenith/module)
+* [Command](https://github.com/rfresh2/ZenithProxy/tree/1.21.4/src/main/java/com/zenith/command)
 
 ### JavaDocs
 
-https://maven.2b2t.vc/javadoc/releases/com/zenith/ZenithProxy/1.21.0-SNAPSHOT
+https://maven.2b2t.vc/javadoc/releases/com/zenith/ZenithProxy/1.21.4-SNAPSHOT
 
 ### Building Plugins
 

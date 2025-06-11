@@ -17,7 +17,7 @@ import org.example.module.ExampleWanderModule;
     description = "ZenithProxy Example Plugin",
     url = "https://github.com/rfresh2/ZenithProxyExamplePlugin",
     authors = {"rfresh2"},
-    mcVersions = {"1.21.0"} // to indicate any MC version: @Plugin(mcVersions = "*")
+    mcVersions = {"1.21.4"} // to indicate any MC version: @Plugin(mcVersions = "*")
                             // if you touch packet classes, you almost certainly need to pin to a single mc version
 )
 public class ExamplePlugin implements ZenithProxyPlugin {

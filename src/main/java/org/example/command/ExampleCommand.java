@@ -22,8 +22,8 @@ public class ExampleCommand extends Command {
             .name("examplePlugin")
             .category(CommandCategory.MODULE)
             .description("""
-            Example plugin command
-            """)
+                Example plugin command
+                """)
             .usageLines(
                 "on/off",
                 "delay <ticks>"
