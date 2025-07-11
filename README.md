@@ -32,10 +32,15 @@ This method provides a `PluginAPI` object that you can use to register modules, 
 
 `Module` and `Command` classes are implemented the same as in the ZenithProxy source code.
 
-I recommend looking at existing modules and commands for examples.
+I recommend looking at existing modules, commands, and plugins for examples.
 
 * [Module](https://github.com/rfresh2/ZenithProxy/tree/1.21.4/src/main/java/com/zenith/module)
 * [Command](https://github.com/rfresh2/ZenithProxy/tree/1.21.4/src/main/java/com/zenith/command)
+* Plugins
+  * [ZenithProxyVillagerTrader](https://github.com/rfresh2/ZenithProxyVillagerTrader)
+  * [ZenithProxyWebAPI](https://github.com/rfresh2/ZenithProxyWebAPI)
+  * [ZenithProxyChatControl](https://github.com/rfresh2/ZenithProxyChatControl)
+  * More in [my discord server](https://discord.com/channels/1127460556710883391/1369081651564515358)
 
 ### JavaDocs
 
