@@ -4,7 +4,7 @@
 - If you want songs you can look at https://noteblock.world/ or https://www.google.com/search?&q=site%3Agithub.com+filetype%3Anbs and pout .nbs files in the songs folder
 - Nothing will play with just the module on, you have to do either `discJocky play <song>` or `discJocky shuffle on` to start playing songs
 ## Installation
-1. Download the latest release from the [releases page]
+1. Download the latest release from the [releases page](https://github.com/Not-a-Tyler/ZenithProxyDiscJockey/releases)
 2. Put the jar file in the `plugins` folder of your ZenithProxy instance
 3. Put any `.nbs` files in the `/songs` folder
 4. Follow https://github.com/rfresh2/ZenithProxy/wiki/Plugins if you need help setting up plugins
@@ -17,8 +17,10 @@
 - "discJockey shuffle <on/off>" - Toggles shuffling of songs
 - "discJockey skip" - Plays a new random song
 
-# Demonstration
+# Demonstration Video
 
  https://streamable.com/dr9xld
  
-# Note Block Sphere Litematic
+# Note Block Sphere Litematic Download
+
+https://github.com/Not-a-Tyler/ZenithProxyDiscJockey/blob/main/noteblock_sphere_cleaned.litematic
