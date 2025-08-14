@@ -1,4 +1,4 @@
-package org.example;
+package tyler.discjockey;
 
 // The constants are replaced before compilation
 public class BuildConstants {
