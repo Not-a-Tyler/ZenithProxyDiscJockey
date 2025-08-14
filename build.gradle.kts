@@ -30,6 +30,10 @@ dependencies {
 //    shade("com.github.ben-manes.caffeine:caffeine:3.2.0")
 }
 
+tasks.named<JavaExec>("run") {
+    jvmArgs = listOf("-Xms512m", "-Xmx4g")
+}
+
 tasks {
     shadowJar {
         /**
