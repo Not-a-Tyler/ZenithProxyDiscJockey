@@ -4,6 +4,7 @@ import com.zenith.plugin.api.Plugin;
 import com.zenith.plugin.api.PluginAPI;
 import com.zenith.plugin.api.ZenithProxyPlugin;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import tyler.discjockey.command.DJCommand;
 import tyler.discjockey.command.DiscJockeyCommand;
 import tyler.discjockey.module.DiscJockeyModule;
 import tyler.discjockey.utils.SongLoader;
@@ -30,6 +31,7 @@ public class DiscJockeyPlugin implements ZenithProxyPlugin {
         PLUGIN_CONFIG = pluginAPI.registerConfig("disc-jockey-plugin", ExampleConfig.class);
 
         SongLoader.loadSongs();
+        pluginAPI.registerCommand(new DJCommand());
         pluginAPI.registerCommand(new DiscJockeyCommand());
         pluginAPI.registerModule(new DiscJockeyModule());
         LOG.info("Disc Jockey Plugin loaded!");

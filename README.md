@@ -8,14 +8,25 @@
 2. Put the jar file in the `plugins` folder of your ZenithProxy instance
 3. Put any `.nbs` files in the `/songs` folder
 4. Follow https://github.com/rfresh2/ZenithProxy/wiki/Plugins if you need help setting up plugins
+5. Make sure you are not holding anything in your hand if on 2b2t, tuning will fail
 
 ## Commands
-- "discJockey play <song>" - Plays a song, uses a algorithm to find the closest match
-- "discJockey stop" - Stops the currently playing song
-- "discJockey pause" - Pauses the currently playing song
-- "discJockey resume" - Resumes the currently paused song
+ More commands can be found with help discJockey or help dj
+- "discJockey <on/off>" - Toggles the module on or off
 - "discJockey shuffle <on/off>" - Toggles shuffling of songs
-- "discJockey skip" - Plays a new random song
+- "discJockey chatControl <on/off>" - Toggles chat control for the bot
+
+- "dj play <song>" - Plays a song, uses a algorithm to find the closest match
+- "dj stop" - Stops the currently playing song
+- "dj pause" - Pauses the currently playing song
+- "dj resume" - Resumes the currently paused song
+- "dj random" - Plays a new random song
+
+# In Game Commands
+ - You can message it in game !dj <command> to run commands
+ - Example: `/msg botname !dj play never gonna give you up`
+ - any dj command will work
+ - Player messaging the bot has to be in visible range of the bot
 
 # Demonstration Video
 
@@ -24,3 +35,5 @@
 # Note Block Sphere Litematic Download
 
 https://github.com/Not-a-Tyler/ZenithProxyDiscJockey/blob/main/noteblock_sphere_cleaned.litematic
+
+- Designed by EpicPlayerA10

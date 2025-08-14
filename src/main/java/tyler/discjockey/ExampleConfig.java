@@ -9,5 +9,7 @@ public class ExampleConfig {
         public boolean loopSong = false;
         public boolean shuffle = false;
         public boolean rotateToBlock = true;
+        public boolean chatControl = true;
+        public String commandPrefix = "!";
     }
 }

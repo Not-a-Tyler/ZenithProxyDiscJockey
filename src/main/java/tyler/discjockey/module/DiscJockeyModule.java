@@ -2,7 +2,12 @@ package tyler.discjockey.module;
 
 import com.github.rfresh2.EventConsumer;
 import com.zenith.Proxy;
+import com.zenith.command.api.CommandContext;
+import com.zenith.command.api.CommandSource;
+import com.zenith.discord.Embed;
+import com.zenith.event.chat.WhisperChatEvent;
 import com.zenith.event.client.ClientBotTick;
+import com.zenith.feature.player.Input;
 import com.zenith.feature.player.InputRequest;
 import com.zenith.feature.player.RotationHelper;
 import com.zenith.feature.player.World;
@@ -10,7 +15,12 @@ import com.zenith.mc.block.*;
 import com.zenith.mc.block.properties.NoteBlockInstrument;
 import com.zenith.mc.block.properties.api.BlockStateProperties;
 import com.zenith.module.api.Module;
+import com.zenith.util.ChatUtil;
 import com.zenith.util.struct.Pair;
+import org.geysermc.mcprotocollib.protocol.data.game.PlayerListEntry;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.type.EntityType;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundSetCarriedItemPacket;
 import tyler.discjockey.DiscJockeyPlugin;
 import tyler.discjockey.utils.Note;
 import tyler.discjockey.utils.Song;
@@ -50,6 +60,8 @@ public class DiscJockeyModule extends Module {
     private int tuneInitialUntunedBlocks = -1;
     private HashMap<BlockPos, Pair<Integer, Long>> notePredictions = new HashMap<>();
     private boolean tempPaused = false;
+    private boolean inQueue = false;
+    private int ticksUntillJump = 0;
 
     @Override
     public boolean enabledSetting() {
@@ -59,8 +71,57 @@ public class DiscJockeyModule extends Module {
     @Override
     public List<EventConsumer<?>> registerEvents() {
         return List.of(
-                of(ClientBotTick.class, this::handleBotTick)
+                of(ClientBotTick.class, this::handleBotTick),
+                of(WhisperChatEvent.class, this::onWhisper)
         );
+    }
+
+    public void onWhisper(WhisperChatEvent event) {
+        String message = event.message().trim();
+        boolean inRenderDistance = CACHE.getEntityCache().getEntities().values().stream().anyMatch(entity -> entity.getEntityType() == EntityType.PLAYER && entity.getUuid().equals(event.sender().getProfileId()));
+
+        if (inRenderDistance && PLUGIN_CONFIG.discJockey.chatControl) {
+            if (!message.startsWith(PLUGIN_CONFIG.discJockey.commandPrefix + "dj")) return;
+            message = message.substring(PLUGIN_CONFIG.discJockey.commandPrefix.length());
+
+            CommandContext commandContext = CommandContext.create(message, DiscJockeyCommandSource.INSTANCE);
+
+            commandContext.getData().put("DiscJockeyPlugin", event.sender());
+
+            COMMAND.execute(commandContext);
+            String response;
+            if (commandContext.getEmbed().isTitlePresent()) {
+                response = ChatUtil.sanitizeChatMessage(commandContext.getEmbed().title());
+            } else {
+                response = "Command executed";
+            }
+
+            reply(event.sender(), response);
+        }
+    }
+
+    public static class DiscJockeyCommandSource implements CommandSource {
+        public static final DiscJockeyCommandSource INSTANCE = new DiscJockeyCommandSource();
+        @Override
+        public String name() {
+            return "Disc Jockey";
+        }
+
+        @Override
+        public boolean validateAccountOwner(final CommandContext ctx) {
+            return false;
+        }
+
+        @Override
+        public void logEmbed(CommandContext ctx, Embed embed) {
+
+        }
+    }
+
+    public static void reply(PlayerListEntry sender, String text) {
+        String reply = "msg " + sender.getName() + " " + text + " " + UUID.randomUUID().toString().replace("-", "");
+        LOG.info("sending reply " + reply);
+        Proxy.getInstance().getClient().getChannel().writeAndFlush(new ServerboundChatCommandPacket(reply));
     }
 
     public @NotNull HashMap<NoteBlockInstrument, @Nullable NoteBlockInstrument> instrumentMap = new HashMap<>(); // Toy
@@ -113,15 +174,11 @@ public class DiscJockeyModule extends Module {
     }
 
     public void playRandomSong() {
-        if (PLUGIN_CONFIG.discJockey.shuffle) {
-            Song randomSong = SongLoader.SONGS.get(new Random().nextInt(SongLoader.SONGS.size()));
-            if (randomSong != null) {
-                start(randomSong);
-            } else {
-                LOG.error("No songs available to play");
-            }
+        Song randomSong = SongLoader.SONGS.get(new Random().nextInt(SongLoader.SONGS.size()));
+        if (randomSong != null) {
+            start(randomSong);
         } else {
-            LOG.warn("Shuffle is disabled, cannot play random song");
+            LOG.error("No songs available to play");
         }
     }
 
@@ -133,7 +190,7 @@ public class DiscJockeyModule extends Module {
 
         stop();
         this.song = song;
-        if(this.playbackThread == null) startPlaybackThread();
+        if (this.playbackThread == null) startPlaybackThread();
         running = true;
         lastPlaybackTickAt = System.currentTimeMillis();
         missingInstrumentBlocks.clear();
@@ -142,6 +199,7 @@ public class DiscJockeyModule extends Module {
 
     public synchronized void stop() {
         stopPlaybackThread();
+        song = null;
         running = false;
         index = 0;
         tick = 0;
@@ -160,12 +218,12 @@ public class DiscJockeyModule extends Module {
         long previousPlaybackTickAt = lastPlaybackTickAt;
         lastPlaybackTickAt = System.currentTimeMillis();
 
-        if(noteBlocks != null && tuned) {
+        if (noteBlocks != null && tuned) {
             while (running) {
                 long note = song.notes[index];
                 if ((short)note <= Math.round(tick)) {
                     @Nullable BlockPos blockPos = noteBlocks.get(Note.INSTRUMENTS[(byte)(note >> Note.INSTRUMENT_SHIFT)]).get((byte)(note >> Note.NOTE_SHIFT));
-                    if(blockPos == null) {
+                    if (blockPos == null) {
                         // Instrument got likely mapped to "nothing". Skip it
                         index++;
                         continue;
@@ -176,7 +234,10 @@ public class DiscJockeyModule extends Module {
                         return;
                     }
 
-                    Proxy.getInstance().getClient().getChannel().write(new ServerboundPlayerActionPacket(PlayerAction.START_DESTROY_BLOCK, blockPos.x(), blockPos.y(), blockPos.z(), Direction.UP, 0));
+                    Proxy.getInstance().getClient().getChannel().write(
+                            new ServerboundPlayerActionPacket(PlayerAction.START_DESTROY_BLOCK,
+                                blockPos.x(), blockPos.y(), blockPos.z(),
+                                Direction.UP, CACHE.getPlayerCache().getSeqId().incrementAndGet()));
 
                     if (PLUGIN_CONFIG.discJockey.rotateToBlock) {
                         var rotation = RotationHelper.shortestRotationTo(blockPos.x(), blockPos.y(), blockPos.z());
@@ -200,7 +261,7 @@ public class DiscJockeyModule extends Module {
                 }
             }
 
-            if(running) { // Might not be running anymore (prevent small offset on song, even if that is not played anymore)
+            if (running) { // Might not be running anymore (prevent small offset on song, even if that is not played anymore)
                 long elapsedMs = previousPlaybackTickAt != -1L && lastPlaybackTickAt != -1L ? lastPlaybackTickAt - previousPlaybackTickAt : (16); // Assume 16ms if unknown
                 tick += song.millisecondsToTicks(elapsedMs) * PLUGIN_CONFIG.discJockey.playbackSpeed;
                 Proxy.getInstance().getClient().getChannel().flush();
@@ -210,7 +271,18 @@ public class DiscJockeyModule extends Module {
 
 
     private void handleBotTick(ClientBotTick event) {
-        if (BARITONE.isActive() || (Proxy.getInstance().isOn2b2t() && Proxy.getInstance().isInQueue())) {
+        BlockPos playerPos = CACHE.getPlayerCache().getThePlayer().blockPos();
+
+
+        boolean inQueue = Proxy.getInstance().isOn2b2t() && (Proxy.getInstance().isInQueue() || !World.isChunkLoadedBlockPos(playerPos.x(), playerPos.z()));
+        if (inQueue != this.inQueue) {
+            if (!inQueue) {
+                ticksUntillJump = 60;
+            }
+            this.inQueue = inQueue;
+        }
+
+        if (BARITONE.isActive() || inQueue) {
             tempPaused = true;
             pause();
             return;
@@ -218,36 +290,56 @@ public class DiscJockeyModule extends Module {
             resume();
         }
 
-        if (!running && PLUGIN_CONFIG.discJockey.shuffle) {
-            Song randomSong = SongLoader.SONGS.get(new Random().nextInt(SongLoader.SONGS.size()));
-            if (randomSong != null) {
-                start(randomSong);
+        if (ticksUntillJump > 0) { // jump to prevent 2b2ts antispam from preventing outgoing commands
+            ticksUntillJump--;
+            if (ticksUntillJump == 10) {
+                INPUTS.submit(InputRequest.builder()
+                        .input(Input.builder().jumping(true).build())
+                        .priority(100000)
+                        .build());
             }
+            return;
+        }
+
+        if (song == null && PLUGIN_CONFIG.discJockey.shuffle) {
+            playRandomSong();
+        }
+
+        if (CACHE.getPlayerCache().getInventoryCache().getPlayerInventory().getItemStack(36 + CACHE.getPlayerCache().getHeldItemSlot()) != null) {
+            int hotbarSlot = 0;
+            for (int i = 36; i < 44; i++) {
+                if (CACHE.getPlayerCache().getInventoryCache().getPlayerInventory().getItemStack(i) == null) {
+                    sendClientPacket(new ServerboundSetCarriedItemPacket(hotbarSlot));
+                    return;
+                }
+                hotbarSlot++;
+            }
+            LOG.error("Unable to find empty hotbar slot, cannot play song");
+            stop();
+            return;
         }
 
 
-        if(song == null || !running) return;
 
+        if (song == null || !running) return;
 
 
         // Clear outdated note predictions
         ArrayList<BlockPos> outdatedPredictions = new ArrayList<>();
-        for(Map.Entry<BlockPos, Pair<Integer, Long>> entry : notePredictions.entrySet()) {
-            if(entry.getValue().right() < System.currentTimeMillis())
+        for (Map.Entry<BlockPos, Pair<Integer, Long>> entry : notePredictions.entrySet()) {
+            if (entry.getValue().right() < System.currentTimeMillis())
                 outdatedPredictions.add(entry.getKey());
         }
-        for(BlockPos outdatedPrediction : outdatedPredictions) notePredictions.remove(outdatedPrediction);
+        for (BlockPos outdatedPrediction : outdatedPredictions) notePredictions.remove(outdatedPrediction);
 
         if (noteBlocks == null) {
-
             // Create list of available noteblock positions per used instrument
             HashMap<NoteBlockInstrument, ArrayList<BlockPos>> noteblocksForInstrument = new HashMap<>();
-            for(NoteBlockInstrument instrument : NoteBlockInstrument.values()) noteblocksForInstrument.put(instrument, new ArrayList<>());
+            for (NoteBlockInstrument instrument : NoteBlockInstrument.values()) noteblocksForInstrument.put(instrument, new ArrayList<>());
 
             final int maxOffset = 7;
-            BlockPos playerPos = CACHE.getPlayerCache().getThePlayer().blockPos();
 
-            for(NoteBlockInstrument instrument : noteblocksForInstrument.keySet().toArray(new NoteBlockInstrument[0])) {
+            for (NoteBlockInstrument instrument : noteblocksForInstrument.keySet().toArray(new NoteBlockInstrument[0])) {
                 for (int x = -maxOffset; x < maxOffset; x++) {
                     for (int y = -maxOffset; y < maxOffset; y++) {
                         for (int z = -maxOffset; z < maxOffset; z++) {
@@ -259,7 +351,6 @@ public class DiscJockeyModule extends Module {
                             Block block = World.getBlock(offset);
 
                             if (block != BlockRegistry.NOTE_BLOCK || !World.getBlock(offset.above()).name().contains("air")) continue;
-
 
                             if (World.getBlockStateProperty(World.getBlockStateId(offset), BlockStateProperties.NOTEBLOCK_INSTRUMENT) == instrument) {
                                 noteblocksForInstrument.get(instrument).add(offset);
@@ -274,9 +365,9 @@ public class DiscJockeyModule extends Module {
             // Remap instruments for funzies
             if (!instrumentMap.isEmpty()) {
                 HashMap<NoteBlockInstrument, ArrayList<BlockPos>> newNoteblocksForInstrument = new HashMap<>();
-                for(NoteBlockInstrument orig : noteblocksForInstrument.keySet()) {
+                for (NoteBlockInstrument orig : noteblocksForInstrument.keySet()) {
                     NoteBlockInstrument mappedInstrument = instrumentMap.getOrDefault(orig, orig);
-                    if(mappedInstrument == null) {
+                    if (mappedInstrument == null) {
                         // Instrument got likely mapped to "nothing"
                         newNoteblocksForInstrument.put(orig, null);
                         continue;
@@ -289,9 +380,9 @@ public class DiscJockeyModule extends Module {
 
             // Find fitting noteblocks with the least amount of adjustments required (to reduce tuning time)
             ArrayList<Note> capturedNotes = new ArrayList<>();
-            for(Note note : song.uniqueNotes) {
+            for (Note note : song.uniqueNotes) {
                 ArrayList<BlockPos> availableBlocks = noteblocksForInstrument.get(note.instrument());
-                if(availableBlocks == null) {
+                if (availableBlocks == null) {
                     // Note was mapped to "nothing". Pretend it got captured, but just ignore it
                     capturedNotes.add(note);
                     getNotes(note.instrument()).put(note.note(), null);
@@ -299,7 +390,7 @@ public class DiscJockeyModule extends Module {
                 }
                 BlockPos bestBlockPos = null;
                 int bestBlockTuningSteps = Integer.MAX_VALUE;
-                for(BlockPos blockPos : availableBlocks) {
+                for (BlockPos blockPos : availableBlocks) {
                     int wantedNote = note.note();
                     Integer currentNote = World.getBlockStateProperty(World.getBlockStateId(blockPos), BlockStateProperties.NOTE);
                     if (currentNote == null) {
@@ -308,13 +399,13 @@ public class DiscJockeyModule extends Module {
                     }
                     int tuningSteps = wantedNote >= currentNote ? wantedNote - currentNote : (25 - currentNote) + wantedNote;
 
-                    if(tuningSteps < bestBlockTuningSteps) {
+                    if ( tuningSteps < bestBlockTuningSteps) {
                         bestBlockPos = blockPos;
                         bestBlockTuningSteps = tuningSteps;
                     }
                 }
 
-                if(bestBlockPos != null) {
+                if (bestBlockPos != null) {
                     capturedNotes.add(note);
                     availableBlocks.remove(bestBlockPos);
                     getNotes(note.instrument()).put(note.note(), bestBlockPos);
@@ -328,7 +419,7 @@ public class DiscJockeyModule extends Module {
                 HashMap<Block, Integer> missing = new HashMap<>();
                 for (Note note : missingNotes) {
                     NoteBlockInstrument mappedInstrument = instrumentMap.getOrDefault(note.instrument(), note.instrument());
-                    if(mappedInstrument == null) continue; // Ignore if mapped to nothing
+                    if (mappedInstrument == null) continue; // Ignore if mapped to nothing
                     Block block = Note.INSTRUMENT_BLOCKS.get(mappedInstrument);
                     Integer got = missing.get(block);
                     if (got == null) got = 0;
@@ -337,14 +428,14 @@ public class DiscJockeyModule extends Module {
 
                 missingInstrumentBlocks = missing;
                 missing.forEach((block, integer) -> LOG.error("player.invalid_note_blocks missing " + integer + " of " + BlockRegistry.REGISTRY.get(block.id()).name()));
-                capturedNotes.forEach(note -> LOG.error("captured " + note.instrument() + " note " + note.note()));
                 stop();
             }
         } else if (!tuned) {
-            if(lastInteractAt != -1L) {
+
+            if (lastInteractAt != -1L) {
                 availableInteracts += ((System.currentTimeMillis() - lastInteractAt) / (310.0f / 8.0f));
                 availableInteracts = Math.min(8f, Math.max(0f, availableInteracts));
-            }else {
+            } else {
                 availableInteracts = 8;
                 lastInteractAt = System.currentTimeMillis();
             }
@@ -352,22 +443,22 @@ public class DiscJockeyModule extends Module {
             int fullyTunedBlocks = 0;
             HashMap<BlockPos, Integer> untunedNotes = new HashMap<>();
             for (Note note : song.uniqueNotes) {
-                if(noteBlocks == null || noteBlocks.get(note.instrument()) == null)
+                if (noteBlocks == null || noteBlocks.get(note.instrument()) == null)
                     continue;
                 BlockPos blockPos = noteBlocks.get(note.instrument()).get(note.note());
-                if(blockPos == null) continue;
+                if (blockPos == null) continue;
                 int blockState = World.getBlockStateId(blockPos);
 
                 Integer blockStateNote = World.getBlockStateProperty(blockState, BlockStateProperties.NOTE);
 
                 Integer assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).left() : blockStateNote;
                 if (assumedNote == null) {
-                    LOG.warn("player.invalid_note_blocks noteblock at " + blockPos + " is not a noteblock anymore, or was never a noteblock");
+                    LOG.warn("noteblock at " + blockPos + " is not a noteblock anymore, or was never a noteblock");
                     continue;
                 }
 
                 if (blockStateNote != null) {
-                    if(assumedNote == note.note() && blockStateNote == note.note())
+                    if (assumedNote == note.note() && blockStateNote == note.note())
                         fullyTunedBlocks++;
 
                     if (assumedNote != note.note()) {
@@ -384,12 +475,12 @@ public class DiscJockeyModule extends Module {
                 }
             }
 
-            if(tuneInitialUntunedBlocks == -1 || tuneInitialUntunedBlocks < untunedNotes.size())
+            if (tuneInitialUntunedBlocks == -1 || tuneInitialUntunedBlocks < untunedNotes.size())
                 tuneInitialUntunedBlocks = untunedNotes.size();
 
             int existingUniqueNotesCount = 0;
-            for(Note n : song.uniqueNotes) {
-                if(noteBlocks.get(n.instrument()).get(n.note()) != null)
+            for (Note n : song.uniqueNotes) {
+                if (noteBlocks.get(n.instrument()).get(n.note()) != null)
                     existingUniqueNotesCount++;
             }
 
@@ -397,7 +488,7 @@ public class DiscJockeyModule extends Module {
                 LOG.info("it looks like we are tuned now!");
                 tuned = true;
                 // Wait roundrip + 100ms before considering tuned after changing notes (in case the server rejects an interact)
-//                if(lastInteractAt == -1 || System.currentTimeMillis() - lastInteractAt >= 1500) {
+//                if (lastInteractAt == -1 || System.currentTimeMillis() - lastInteractAt >= 1500) {
 //                    tuned = true;
 //                    tuneInitialUntunedBlocks = -1;
 //                }
@@ -426,29 +517,28 @@ public class DiscJockeyModule extends Module {
                         }
                     }
                     // Not found. Reset last note
-                    if(blockPos == null)
+                    if (blockPos == null)
                         lastTunedNote = Integer.MIN_VALUE;
-                    if(blockPos == null && searches > 1) {
+                    if (blockPos == null && searches > 1) {
                         // Something went wrong. Take any note (one should at least exist here)
                         blockPos = untunedNotes.keySet().toArray(new BlockPos[0])[0];
                         break;
                     }
                 }
-                if(blockPos == null) return; // Something went very, very wrong!
+                if (blockPos == null) return; // Something went very, very wrong!
 
                 lastTunedNote = untunedNotes.get(blockPos);
                 untunedNotes.remove(blockPos);
                 Integer assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).left() : World.getBlockStateProperty(World.getBlockStateId(blockPos), BlockStateProperties.NOTE);
 
                 if (assumedNote == null) {
-                    LOG.warn("player.invalid_note_blocks noteblock at " + blockPos + " is not a noteblock anymore, or was never a noteblock");
+                    LOG.warn("Noteblock at " + blockPos + " is not a noteblock anymore, or was never a noteblock");
                     continue;
                 }
 
                 notePredictions.put(blockPos, new Pair<>((assumedNote + 1) % 25, 1000L));
 
-
-                Proxy.getInstance().getClient().getChannel().writeAndFlush(new ServerboundUseItemOnPacket(
+                 Proxy.getInstance().getClient().getChannel().writeAndFlush(new ServerboundUseItemOnPacket(
                         blockPos.x(), blockPos.y(), blockPos.z(),
                         Direction.UP, Hand.MAIN_HAND, 0.5f, 0.5f, 0.5f,
                         false, false, CACHE.getPlayerCache().getSeqId().incrementAndGet()
